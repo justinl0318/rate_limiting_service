@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hello-world-deployment
+  labels:
+    app: hello-world # label of the deployment
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: hello-world 
+  template:
+    metadata:
+      labels:
+        app: hello-world
+    spec:
+      containers:
+      - name: hello-world
+        image: justinl0318/hello_world:latest
+        ports:
+        - containerPort: 5000
+        env:
+        - name: RATE_LIMITER_SERVICE_HOST
+          value: "rate-limiter-service"
+        - name: RATE_LIMITER_SERVICE_PORT
+          value: "5000"
+
+---
+
+# to allow external request
+apiVersion: v1
+kind: Service
+metadata:
+  name: hello-world-service
+spec:
+  type: NodePort
+  selector:
+    app: hello-world
+  ports:
+    - port: 5000
+      nodePort: 30000
+      targetPort: 5000

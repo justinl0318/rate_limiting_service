@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rate-limiter-deployment 
+  labels:
+    app: rate-limiter # label of deployment
+spec: # template for deployment
+  replicas: 1
+  selector:
+    matchLabels:
+      app: rate-limiter
+  template: # blueprint of a pod
+    metadata:
+      labels:
+        app: rate-limiter # label of the pod
+    spec:
+      containers:
+        - name: rate-limiter
+          image: justinl0318/rate_limiter:latest
+          ports:
+            - containerPort: 5000
+          env:
+            - name: REDIS_HOST
+              value: "localhost"
+            - name: REDIS_PORT
+              value: "6379"
+        - name: redis
+          image: redis:latest
+          ports:
+            - containerPort: 6379
+
+---
+
+# internal service that connects to pod
+apiVersion: v1
+kind: Service
+metadata:
+  name: rate-limiter-service
+spec:
+  type: ClusterIP
+  selector:
+    app: rate-limiter # to connect to pod through label
+  ports:
+    - port: 5000
+      targetPort: 5000
+
